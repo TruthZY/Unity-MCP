@@ -27,7 +27,7 @@ namespace McpUnity
         private readonly Queue<PendingRequest> _pendingRequests = new Queue<PendingRequest>();
         private readonly object _queueLock = new object();
 
-        [MenuItem("Window/MCP Unity/Server")]
+        [MenuItem("MCP/Server")]
         public static void ShowWindow()
         {
             GetWindow<McpUnityServer>("MCP Server");

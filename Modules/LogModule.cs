@@ -14,7 +14,11 @@ namespace McpUnity.Modules
     {
         public string ModuleName => "log";
 
-        [McpCommand("get_logs")]
+        [McpCommand("get_logs", "获取Unity控制台日志")]
+        [McpParameter("filter", "过滤级别: error, warning, log", Required = false, Example = "error")]
+        [McpParameter("logType", "日志类型", Required = false, Example = "Error")]
+        [McpParameter("search", "搜索关键词", Required = false, Example = "NullReference")]
+        [McpParameter("limit", "返回数量限制(最大50)", Required = false, DefaultValue = "50", Example = "20")]
         public object GetLogs(Dictionary<string, string> parameters)
         {
             string filter = GetParam(parameters, "filter");
@@ -42,7 +46,7 @@ namespace McpUnity.Modules
             };
         }
 
-        [McpCommand("clear_logs")]
+        [McpCommand("clear_logs", "清空Unity控制台日志")]
         public object ClearLogs(Dictionary<string, string> parameters)
         {
             LogCollector.ClearLogs();
@@ -53,7 +57,7 @@ namespace McpUnity.Modules
             };
         }
 
-        [McpCommand("get_log_count")]
+        [McpCommand("get_log_count", "获取Unity控制台日志数量")]
         public object GetLogCount(Dictionary<string, string> parameters)
         {
             int count = LogCollector.GetLogCount();

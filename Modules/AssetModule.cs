@@ -16,7 +16,10 @@ namespace McpUnity.Modules
     {
         public string ModuleName => "asset";
 
-        [McpCommand("get_assets")]
+        [McpCommand("get_assets", "获取指定路径下的资源列表")]
+        [McpParameter("path", "资源路径，相对于Assets文件夹", Required = false, DefaultValue = "Assets", Example = "Assets/UI/Prefabs")]
+        [McpParameter("searchPattern", "搜索模式，支持通配符", Required = false, DefaultValue = "*", Example = "*.prefab")]
+        [McpParameter("recursive", "是否递归搜索子文件夹", Required = false, DefaultValue = "false", Example = "true")]
         public object GetAssets(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path", "Assets");
@@ -74,7 +77,9 @@ namespace McpUnity.Modules
             }
         }
 
-        [McpCommand("load_asset")]
+        [McpCommand("load_asset", "加载指定路径的资源")]
+        [McpParameter("path", "资源完整路径，必须以Assets开头", Required = true, Example = "Assets/UI/Prefabs/MyButton.prefab")]
+        [McpParameter("type", "资源类型全名", Required = false, DefaultValue = "UnityEngine.Object", Example = "UnityEngine.GameObject")]
         public object LoadAsset(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
@@ -126,7 +131,9 @@ namespace McpUnity.Modules
             }
         }
 
-        [McpCommand("create_folder")]
+        [McpCommand("create_folder", "在Assets下创建新文件夹")]
+        [McpParameter("parentPath", "父文件夹路径", Required = false, DefaultValue = "Assets", Example = "Assets/UI")]
+        [McpParameter("folderName", "新文件夹名称", Required = true, Example = "NewFolder")]
         public object CreateFolder(Dictionary<string, string> parameters)
         {
             string parentPath = GetParam(parameters, "parentPath", "Assets");
@@ -166,7 +173,8 @@ namespace McpUnity.Modules
             }
         }
 
-        [McpCommand("delete_asset")]
+        [McpCommand("delete_asset", "删除指定路径的资源")]
+        [McpParameter("path", "要删除的资源路径", Required = true, Example = "Assets/UI/OldPrefab.prefab")]
         public object DeleteAsset(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");

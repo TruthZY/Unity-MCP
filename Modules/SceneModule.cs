@@ -17,7 +17,7 @@ namespace McpUnity.Modules
     {
         public string ModuleName => "scene";
 
-        [McpCommand("ping")]
+        [McpCommand("ping", "测试服务器连接")]
         public object Ping(Dictionary<string, string> parameters)
         {
             return new PingResult 
@@ -28,7 +28,7 @@ namespace McpUnity.Modules
             };
         }
 
-        [McpCommand("get_hierarchy")]
+        [McpCommand("get_hierarchy", "获取当前场景的完整层级结构")]
         public object GetHierarchy(Dictionary<string, string> parameters)
         {
             var scene = SceneManager.GetActiveScene();
@@ -42,7 +42,9 @@ namespace McpUnity.Modules
             };
         }
 
-        [McpCommand("select_object")]
+        [McpCommand("select_object", "在场景中选中指定GameObject")]
+        [McpParameter("path", "对象完整路径", Required = false, Example = "Canvas/Panel/Button")]
+        [McpParameter("name", "对象名称（path和name二选一）", Required = false, Example = "MainCamera")]
         public object SelectObject(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
@@ -68,7 +70,10 @@ namespace McpUnity.Modules
             return new SelectResult { selected = false, error = "Object not found" };
         }
 
-        [McpCommand("create_object")]
+        [McpCommand("create_object", "在场景中创建新GameObject")]
+        [McpParameter("name", "对象名称", Required = false, DefaultValue = "New GameObject", Example = "MyButton")]
+        [McpParameter("primitiveType", "基础类型，如 Cube, Sphere, Cylinder", Required = false, Example = "Cube")]
+        [McpParameter("parent", "父对象路径", Required = false, Example = "Canvas/Panel")]
         public object CreateObject(Dictionary<string, string> parameters)
         {
             string name = GetParam(parameters, "name", "New GameObject");
@@ -101,7 +106,9 @@ namespace McpUnity.Modules
             return new CreateResult { created = true, name = obj.name, path = GetGameObjectPath(obj) };
         }
 
-        [McpCommand("delete_object")]
+        [McpCommand("delete_object", "删除场景中的GameObject")]
+        [McpParameter("path", "对象完整路径", Required = false, Example = "Canvas/Panel/OldButton")]
+        [McpParameter("name", "对象名称（path和name二选一）", Required = false, Example = "TempObject")]
         public object DeleteObject(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
@@ -128,7 +135,11 @@ namespace McpUnity.Modules
             return new DeleteResult { deleted = false, error = "Object not found" };
         }
 
-        [McpCommand("set_property")]
+        [McpCommand("set_property", "设置GameObject组件的属性值")]
+        [McpParameter("path", "对象完整路径", Required = true, Example = "Canvas/Panel/Button")]
+        [McpParameter("component", "组件名称", Required = true, Example = "Transform")]
+        [McpParameter("property", "属性名称", Required = true, Example = "localPosition")]
+        [McpParameter("value", "属性值（JSON格式）", Required = true, Example = "{\"x\":0,\"y\":100,\"z\":0}")]
         public object SetProperty(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
@@ -189,7 +200,10 @@ namespace McpUnity.Modules
             }
         }
 
-        [McpCommand("get_property")]
+        [McpCommand("get_property", "获取GameObject组件的属性值")]
+        [McpParameter("path", "对象完整路径", Required = true, Example = "Canvas/Panel/Button")]
+        [McpParameter("component", "组件名称", Required = true, Example = "RectTransform")]
+        [McpParameter("property", "属性名称", Required = true, Example = "anchoredPosition")]
         public object GetProperty(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
@@ -225,7 +239,8 @@ namespace McpUnity.Modules
             return new GetPropertyResult { component = componentName, property = propertyName, value = value?.ToString() };
         }
 
-        [McpCommand("execute_menu")]
+        [McpCommand("execute_menu", "执行Unity编辑器菜单命令")]
+        [McpParameter("path", "菜单路径", Required = true, Example = "GameObject/3D Object/Cube")]
         public object ExecuteMenu(Dictionary<string, string> parameters)
         {
             string menuPath = GetParam(parameters, "path");
@@ -238,20 +253,9 @@ namespace McpUnity.Modules
             return new MenuResult { executed = true, path = menuPath };
         }
 
-        [McpCommand("get_components")]
-        public object GetComponents(Dictionary<string, string> parameters)
-        {
-            string path = GetParam(parameters, "path");
-            var obj = GameObject.Find(path);
-            if (obj == null)
-            {
-                return new ComponentsResult { error = "Object not found" };
-            }
-
-            return new ComponentsResult { objectName = obj.name, components = obj.GetComponents<Component>().Select(c => c.GetType().Name).ToArray() };
-        }
-
-        [McpCommand("add_component")]
+        [McpCommand("add_component", "给GameObject添加组件")]
+        [McpParameter("path", "对象完整路径", Required = true, Example = "Canvas/Panel/Button")]
+        [McpParameter("type", "组件类型全称", Required = true, Example = "UnityEngine.UI.Button")]
         public object AddComponent(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");

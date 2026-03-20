@@ -18,10 +18,37 @@ namespace McpUnity.Core
     public class McpCommandAttribute : Attribute
     {
         public string CommandName { get; }
+        public string Description { get; set; }
+        public McpParameterAttribute[] Parameters { get; set; }
         
         public McpCommandAttribute(string commandName)
         {
             CommandName = commandName;
+        }
+        
+        public McpCommandAttribute(string commandName, string description)
+        {
+            CommandName = commandName;
+            Description = description;
+        }
+    }
+
+    /// <summary>
+    /// MCP命令参数特性 - 描述命令参数
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class McpParameterAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; set; } = true;
+        public string DefaultValue { get; set; }
+        public string Example { get; set; }
+        
+        public McpParameterAttribute(string name, string description)
+        {
+            Name = name;
+            Description = description;
         }
     }
 

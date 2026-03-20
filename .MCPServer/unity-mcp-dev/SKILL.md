@@ -22,7 +22,8 @@ MCPEditor/
 │   ├── SceneModule.cs        # Scene operations
 │   ├── AssetModule.cs        # Asset management
 │   ├── LogModule.cs          # Log collection
-│   └── PrefabModule.cs       # Prefab analysis
+│   ├── PrefabModule.cs       # Prefab analysis
+│   └── LuaModule.cs          # LuaBehaviour parameters
 ├── LogCollector.cs           # Log collector (singleton)
 └── McpUnityServer.cs         # HTTP server window
 ```
@@ -176,6 +177,39 @@ return new Result { success = false, error = "Message" };
 - `get_hierarchy` - Full prefab hierarchy
 - `get_components` - Components of object
 - `find_objects` - Search by name/component
+
+### LuaModule (`lua_*`)
+- `get_lua_params` - Get LuaBehaviour parameters (object references + JSON values)
+- `set_lua_param` - Set LuaBehaviour parameter (type: "object" or "value")
+- `find_lua_behaviours` - Find all GameObjects with LuaBehaviour
+
+**LuaBehaviour Parameter Types:**
+- `object` - Unity object references (Transform, GameObject, Component, etc.)
+- `value` - JSON-serialized values (int, float, bool, string, Vector3, Color, etc.)
+
+**Example Usage:**
+```csharp
+// Get Lua parameters
+var result = await unityClient.sendCommand('get_lua_params', {
+    path: "Canvas/MainView"
+});
+
+// Set an object reference parameter
+await unityClient.sendCommand('set_lua_param', {
+    path: "Canvas/MainView",
+    key: "closeBtn",
+    type: "object",
+    objectPath: "Canvas/MainView/CloseButton"
+});
+
+// Set a value parameter
+await unityClient.sendCommand('set_lua_param', {
+    path: "Canvas/MainView",
+    key: "showAnimation",
+    type: "value",
+    value: "{\"obj\":true}"  // JSON format for ObjWrap<bool>
+});
+```
 
 ## Testing Checklist
 

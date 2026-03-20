@@ -1,0 +1,439 @@
+{
+  
+    "generatedAt":  "2026-03-20 21:50:11",
+  
+    "unityVersion":  "2022.3.61t8",
+  
+    "commands":  [
+    
+        {
+      
+            "module":  "asset",
+      
+            "command":  "create_folder",
+      
+            "toolName":  "unity_asset_create_folder",
+      
+            "description":  "在Assets下创建新文件夹",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "parentPath",
+          
+                    "description":  "父文件夹路径",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "folderName",
+          
+                    "description":  "新文件夹名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "asset",
+      
+            "command":  "delete_asset",
+      
+            "toolName":  "unity_asset_delete_asset",
+      
+            "description":  "删除指定路径的资源",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "要删除的资源路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "asset",
+      
+            "command":  "get_assets",
+      
+            "toolName":  "unity_asset_get_assets",
+      
+            "description":  "获取指定路径下的资源列表",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "资源路径，相对于Assets文件夹",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "searchPattern",
+          
+                    "description":  "搜索模式，支持通配符",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "recursive",
+          
+                    "description":  "是否递归搜索子文件夹",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "asset",
+      
+            "command":  "load_asset",
+      
+            "toolName":  "unity_asset_load_asset",
+      
+            "description":  "加载指定路径的资源",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "资源完整路径，必须以Assets开头",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "type",
+          
+                    "description":  "资源类型全名",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "log",
+      
+            "command":  "clear_logs",
+      
+            "toolName":  "unity_log_clear_logs",
+      
+            "description":  "清空Unity控制台日志",
+      
+            "parameters":  [
+        
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "log",
+      
+            "command":  "get_log_count",
+      
+            "toolName":  "unity_log_get_log_count",
+      
+            "description":  "获取Unity控制台日志数量",
+      
+            "parameters":  [
+        
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "log",
+      
+            "command":  "get_logs",
+      
+            "toolName":  "unity_log_get_logs",
+      
+            "description":  "获取Unity控制台日志",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "filter",
+          
+                    "description":  "过滤级别: error, warning, log",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "logType",
+          
+                    "description":  "日志类型",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "search",
+          
+                    "description":  "搜索关键词",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "limit",
+          
+                    "description":  "返回数量限制(最大50)",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "lua",
+      
+            "command":  "get_prefab_lua_params",
+      
+            "toolName":  "unity_lua_get_prefab_lua_params",
+      
+            "description":  "从prefab资源中获取LuaBehaviour参数，无需实例化到场景",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "prefabPath",
+          
+                    "description":  "Prefab文件路径，如 Assets/UI/MyPrefab.prefab",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "gameObjectName",
+          
+                    "description":  "可选：指定特定GameObject名称过滤",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "find_objects_or_components",
+      
+            "toolName":  "unity_prefab_find_objects_or_components",
+      
+            "description":  "在Prefab中搜索对象",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "name",
+          
+                    "description":  "按名称过滤",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "componentType",
+          
+                    "description":  "按组件类型过滤",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "get_hierarchy",
+      
+            "toolName":  "unity_prefab_get_hierarchy",
+      
+            "description":  "获取Prefab的完整层级结构",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "ping",
+      
+            "toolName":  "unity_scene_ping",
+      
+            "description":  "测试服务器连接",
+      
+            "parameters":  [
+        
+      ]
+        
+    }
+    
+  ]
+
+}

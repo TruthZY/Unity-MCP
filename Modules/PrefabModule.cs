@@ -15,7 +15,8 @@ namespace McpUnity.Modules
     {
         public string ModuleName => "prefab";
 
-        [McpCommand("get_hierarchy")]
+        [McpCommand("get_hierarchy", "获取Prefab的完整层级结构")]
+        [McpParameter("path", "Prefab文件路径", Required = true, Example = "Assets/UI/Prefabs/MainView.prefab")]
         public object GetHierarchy(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
@@ -55,61 +56,10 @@ namespace McpUnity.Modules
             }
         }
 
-        [McpCommand("get_components")]
-        public object GetComponents(Dictionary<string, string> parameters)
-        {
-            string path = GetParam(parameters, "path");
-            string objectPath = GetParam(parameters, "objectPath");
-
-            if (string.IsNullOrEmpty(path))
-            {
-                return new PrefabComponentsResult { success = false, error = "Prefab path is required" };
-            }
-
-            try
-            {
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                if (prefab == null)
-                {
-                    return new PrefabComponentsResult { success = false, error = $"Prefab not found: {path}" };
-                }
-
-                // 查找目标对象
-                Transform target = prefab.transform;
-                if (!string.IsNullOrEmpty(objectPath) && objectPath != prefab.name)
-                {
-                    target = prefab.transform.Find(objectPath);
-                    if (target == null)
-                    {
-                        return new PrefabComponentsResult { success = false, error = $"Object not found: {objectPath}" };
-                    }
-                }
-
-                var components = target.GetComponents<Component>()
-                    .Where(c => c != null)
-                    .Select(c => new ComponentDetail
-                    {
-                        type = c.GetType().Name,
-                        fullTypeName = c.GetType().FullName,
-                        enabled = c is Behaviour behaviour ? behaviour.enabled : true
-                    }).ToArray();
-
-                return new PrefabComponentsResult
-                {
-                    success = true,
-                    prefabName = prefab.name,
-                    objectName = target.name,
-                    objectPath = objectPath ?? prefab.name,
-                    components = components
-                };
-            }
-            catch (Exception ex)
-            {
-                return new PrefabComponentsResult { success = false, error = ex.Message };
-            }
-        }
-
-        [McpCommand("find_objects")]
+        [McpCommand("find_objects_or_components", "在Prefab中搜索对象")]
+        [McpParameter("path", "Prefab文件路径", Required = true, Example = "Assets/UI/Prefabs/MainView.prefab")]
+        [McpParameter("name", "按名称过滤", Required = false, Example = "Button")]
+        [McpParameter("componentType", "按组件类型过滤", Required = false, Example = "UnityEngine.UI.Image")]
         public object FindObjects(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
