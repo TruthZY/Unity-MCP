@@ -1,6 +1,6 @@
 {
   
-    "generatedAt":  "2026-03-20 23:10:19",
+    "generatedAt":  "2026-03-21 00:58:33",
   
     "unityVersion":  "2022.3.61t8",
   
@@ -507,6 +507,20 @@
                     "description":  "新值 (object类型填对象名称/value类型填JSON)",
           
                     "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "type",
+          
+                    "description":  "object类型时指定的组件类型(如Button, Image, GameObject等)，为空则使用已绑定类型或GameObject",
+          
+                    "required":  false,
           
                     "defaultValue":  "",
           

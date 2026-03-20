@@ -232,6 +232,7 @@ namespace McpUnity.Modules
         [McpParameter("paramType", "参数类型: object 或 value", Required = true, Example = "object")]
         [McpParameter("key", "参数键名", Required = true, Example = "CloseBtn")]
         [McpParameter("newValue", "新值 (object类型填对象名称/value类型填JSON)", Required = true, Example = "NewButton")]
+        [McpParameter("type", "object类型时指定的组件类型(如Button, Image, GameObject等)，为空则使用已绑定类型或GameObject", Required = false, Example = "Button")]
         public object SetPrefabLuaParam(Dictionary<string, string> parameters)
         {
             string prefabPath = GetParam(parameters, "prefabPath");
@@ -239,6 +240,7 @@ namespace McpUnity.Modules
             string paramType = GetParam(parameters, "paramType");
             string key = GetParam(parameters, "key");
             string newValue = GetParam(parameters, "newValue");
+            string typeName = GetParam(parameters, "type"); // 可选：指定组件类型
 
             // 参数验证
             if (string.IsNullOrEmpty(prefabPath))
@@ -284,7 +286,7 @@ namespace McpUnity.Modules
                 // 使用 SerializedObject 修改参数
                 bool success = false;
                 if (paramType == "object")
-                    success = SetObjectParam(luaBehaviour, key, newValue, prefab);
+                    success = SetObjectParam(luaBehaviour, key, newValue, prefab, typeName);
                 else
                     success = SetValueParam(luaBehaviour, key, newValue);
 
@@ -293,7 +295,9 @@ namespace McpUnity.Modules
 
                 // 标记 prefab 为已修改并保存
                 EditorUtility.SetDirty(prefab);
+                PrefabUtility.SavePrefabAsset(prefab);
                 AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
 
                 return new SetLuaParamResult
                 {
@@ -333,7 +337,7 @@ namespace McpUnity.Modules
         /// 从 SerializedObjValues 中读取期望的类型，然后在目标物体上查找对应组件
         /// 参考 PrefabLuaTemplateGenerator.DeserializeFromLuaBehaviour() 实现
         /// </summary>
-        private bool SetObjectParam(Component luaBehaviour, string key, string targetObjectName, GameObject prefab)
+        private bool SetObjectParam(Component luaBehaviour, string key, string targetObjectName, GameObject prefab, string typeName = null)
         {
             var so = new SerializedObject(luaBehaviour);
             var objValuesProp = so.FindProperty("SerializedObjValues");
@@ -343,9 +347,22 @@ namespace McpUnity.Modules
                 return false;
             }
 
-            // 查找已存在的参数项，获取期望的类型
+            // 确定期望的类型
             Type expectedType = null;
+            
+            // 1. 如果指定了 typeName，优先使用
+            if (!string.IsNullOrEmpty(typeName))
+            {
+                expectedType = GetTypeByName(typeName);
+                if (expectedType == null)
+                {
+                    Debug.LogWarning($"[MCP] Specified type '{typeName}' not found, falling back to existing binding or GameObject");
+                }
+            }
+
             int index = -1;
+            
+            // 2. 查找已存在的参数项（无论是否指定了 typeName，都需要找到 index 来更新）
             for (int i = 0; i < objValuesProp.arraySize; i++)
             {
                 var element = objValuesProp.GetArrayElementAtIndex(i);
@@ -353,22 +370,25 @@ namespace McpUnity.Modules
                 if (keyProp != null && keyProp.stringValue == key)
                 {
                     index = i;
-                    // 获取当前绑定的对象，从中推断期望类型
-                    var existingValueProp = element.FindPropertyRelative("value");
-                    if (existingValueProp != null && existingValueProp.objectReferenceValue != null)
+                    // 如果没有指定 typeName 或找不到指定类型，从现有绑定推断期望类型
+                    if (expectedType == null)
                     {
-                        expectedType = existingValueProp.objectReferenceValue.GetType();
-                        Debug.Log($"[MCP] Found existing binding for key '{key}', expected type: {expectedType.Name}");
+                        var existingValueProp = element.FindPropertyRelative("value");
+                        if (existingValueProp != null && existingValueProp.objectReferenceValue != null)
+                        {
+                            expectedType = existingValueProp.objectReferenceValue.GetType();
+                            Debug.Log($"[MCP] Found existing binding for key '{key}', expected type: {expectedType.Name}");
+                        }
                     }
                     break;
                 }
             }
 
-            // 如果没找到现有绑定，默认使用 UnityEngine.Object
+            // 3. 如果没找到现有绑定且没有指定类型，默认使用 GameObject
             if (expectedType == null)
             {
-                expectedType = typeof(UnityEngine.Object);
-                Debug.Log($"[MCP] No existing binding for key '{key}', using default type: UnityEngine.Object");
+                expectedType = typeof(GameObject);
+                Debug.Log($"[MCP] No existing binding for key '{key}' and no type specified, using default type: GameObject");
             }
 
             // 查找目标对象（在 prefab 内部和场景中查找）
@@ -401,6 +421,44 @@ namespace McpUnity.Modules
             so.ApplyModifiedProperties();
             Debug.Log($"[MCP] Applied modified properties");
             return true;
+        }
+
+        /// <summary>
+        /// 根据类型名称获取 Type
+        /// </summary>
+        private Type GetTypeByName(string typeName)
+        {
+            // 处理常见的 Unity 类型
+            if (typeName == "GameObject")
+                return typeof(GameObject);
+            if (typeName == "Transform")
+                return typeof(Transform);
+            if (typeName == "RectTransform")
+                return typeof(RectTransform);
+
+            // 尝试从 UnityEngine.UI 命名空间查找
+            Type type = Type.GetType($"UnityEngine.UI.{typeName}, UnityEngine.UI");
+            if (type != null) return type;
+
+            // 尝试从 UnityEngine 命名空间查找
+            type = Type.GetType($"UnityEngine.{typeName}, UnityEngine.CoreModule");
+            if (type != null) return type;
+
+            // 尝试从所有已加载的程序集查找
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                type = assembly.GetType(typeName);
+                if (type != null) return type;
+
+                // 尝试添加常见命名空间前缀
+                type = assembly.GetType($"UnityEngine.{typeName}");
+                if (type != null) return type;
+
+                type = assembly.GetType($"UnityEngine.UI.{typeName}");
+                if (type != null) return type;
+            }
+
+            return null;
         }
 
 
