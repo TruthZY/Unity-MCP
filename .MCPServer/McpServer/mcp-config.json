@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "unity": {
+      "command": "node",
+      "args": ["C:/path/to/UnityMCP/McpServer/dist/index.js"],
+      "description": "Unity Editor MCP integration"
+    }
+  }
+}
