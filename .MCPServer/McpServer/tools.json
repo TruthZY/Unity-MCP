@@ -1,6 +1,6 @@
 {
   
-    "generatedAt":  "2026-03-20 21:50:11",
+    "generatedAt":  "2026-03-20 23:10:19",
   
     "unityVersion":  "2022.3.61t8",
   
@@ -290,6 +290,108 @@
       
             "module":  "lua",
       
+            "command":  "attach_script",
+      
+            "toolName":  "unity_lua_attach_script",
+      
+            "description":  "绑定 Lua 脚本到预制体",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "prefabPath",
+          
+                    "description":  "预制体路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "scriptPath",
+          
+                    "description":  "Lua 脚本路径（支持文件路径或命名空间格式）",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "gameObjectName",
+          
+                    "description":  "目标 GameObject 名称，为空则使用根物体",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "lua",
+      
+            "command":  "create_script",
+      
+            "toolName":  "unity_lua_create_script",
+      
+            "description":  "创建 Lua 脚本文件",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "filePath",
+          
+                    "description":  "Lua 文件完整路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "templateType",
+          
+                    "description":  "模板类型: NewView 或 NewLuaBehaviour",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "lua",
+      
             "command":  "get_prefab_lua_params",
       
             "toolName":  "unity_lua_get_prefab_lua_params",
@@ -319,6 +421,92 @@
                     "description":  "可选：指定特定GameObject名称过滤",
           
                     "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "lua",
+      
+            "command":  "set_prefab_lua_param",
+      
+            "toolName":  "unity_lua_set_prefab_lua_param",
+      
+            "description":  "修改 prefab 中 LuaBehaviour 的参数值",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "prefabPath",
+          
+                    "description":  "Prefab 文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "gameObjectName",
+          
+                    "description":  "GameObject 名称，为空则使用 prefab 根物体",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "paramType",
+          
+                    "description":  "参数类型: object 或 value",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "key",
+          
+                    "description":  "参数键名",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  ""
+                
+        },
+        
+                {
+          
+                    "name":  "newValue",
+          
+                    "description":  "新值 (object类型填对象名称/value类型填JSON)",
+          
+                    "required":  true,
           
                     "defaultValue":  "",
           
