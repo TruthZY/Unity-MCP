@@ -214,9 +214,9 @@ namespace McpUnity
                     return;
                 }
 
-                // 读取请求体
+                // 读取请求体 - 强制使用 UTF-8 编码以正确处理中文
                 string requestBody;
-                using (var reader = new System.IO.StreamReader(request.InputStream, request.ContentEncoding))
+                using (var reader = new System.IO.StreamReader(request.InputStream, System.Text.Encoding.UTF8))
                 {
                     requestBody = reader.ReadToEnd();
                 }

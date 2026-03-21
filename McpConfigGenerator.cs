@@ -263,7 +263,9 @@ namespace McpUnity.Editor
                 {
                     Name = attr.Name,
                     Description = attr.Description,
-                    Required = attr.Required
+                    Required = attr.Required,
+                    DefaultValue = attr.DefaultValue,
+                    Example = attr.Example
                 });
             }
             return result;
@@ -306,7 +308,9 @@ namespace McpUnity.Editor
                         {
                             name = p.Name,
                             description = p.Description,
-                            required = p.Required
+                            required = p.Required,
+                            defaultValue = p.DefaultValue ?? "",
+                            example = p.Example ?? ""
                         }).ToList()
                     }).ToList()
                 };
@@ -468,6 +472,8 @@ namespace McpUnity.Editor
             public string Name { get; set; }
             public string Description { get; set; }
             public bool Required { get; set; }
+            public string DefaultValue { get; set; }
+            public string Example { get; set; }
         }
 
         [Serializable]

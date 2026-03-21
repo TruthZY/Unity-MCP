@@ -139,7 +139,7 @@ namespace McpUnity.Modules
         [McpParameter("path", "对象完整路径", Required = true, Example = "Canvas/Panel/Button")]
         [McpParameter("component", "组件名称", Required = true, Example = "Transform")]
         [McpParameter("property", "属性名称", Required = true, Example = "localPosition")]
-        [McpParameter("value", "属性值（JSON格式）", Required = true, Example = "{\"x\":0,\"y\":100,\"z\":0}")]
+        [McpParameter("value", "属性值。简单格式：Vector2/3用逗号分隔如\"100,-50,0\"，Color用逗号分隔如\"1,0,0,1\"，基础类型直接写值", Required = true, Example = "100,-50,0")]
         public object SetProperty(Dictionary<string, string> parameters)
         {
             string path = GetParam(parameters, "path");
@@ -307,6 +307,51 @@ namespace McpUnity.Modules
         private object ConvertValue(object value, Type targetType)
         {
             if (value == null) return null;
+            
+            // 处理字符串格式的 Vector2/Vector3/Color
+            if (value is string strValue)
+            {
+                // Vector2: "x,y"
+                if (targetType == typeof(Vector2))
+                {
+                    var parts = strValue.Split(',');
+                    if (parts.Length >= 2)
+                    {
+                        return new Vector2(
+                            float.Parse(parts[0].Trim()),
+                            float.Parse(parts[1].Trim())
+                        );
+                    }
+                }
+                // Vector3: "x,y,z"
+                if (targetType == typeof(Vector3))
+                {
+                    var parts = strValue.Split(',');
+                    if (parts.Length >= 3)
+                    {
+                        return new Vector3(
+                            float.Parse(parts[0].Trim()),
+                            float.Parse(parts[1].Trim()),
+                            float.Parse(parts[2].Trim())
+                        );
+                    }
+                }
+                // Color: "r,g,b" or "r,g,b,a"
+                if (targetType == typeof(Color))
+                {
+                    var parts = strValue.Split(',');
+                    if (parts.Length >= 3)
+                    {
+                        return new Color(
+                            float.Parse(parts[0].Trim()),
+                            float.Parse(parts[1].Trim()),
+                            float.Parse(parts[2].Trim()),
+                            parts.Length >= 4 ? float.Parse(parts[3].Trim()) : 1f
+                        );
+                    }
+                }
+            }
+            
             return Convert.ChangeType(value, targetType);
         }
 

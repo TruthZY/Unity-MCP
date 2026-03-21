@@ -1,6 +1,6 @@
 {
   
-    "generatedAt":  "2026-03-21 00:58:33",
+    "generatedAt":  "2026-03-21 19:08:29",
   
     "unityVersion":  "2022.3.61t8",
   
@@ -26,9 +26,9 @@
           
                     "required":  false,
           
-                    "defaultValue":  "",
+                    "defaultValue":  "Assets",
           
-                    "example":  ""
+                    "example":  "Assets/UI"
                 
         },
         
@@ -42,7 +42,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "NewFolder"
                 
         }
             
@@ -72,7 +72,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/UI/OldPrefab.prefab"
                 
         }
             
@@ -100,9 +100,9 @@
           
                     "required":  false,
           
-                    "defaultValue":  "",
+                    "defaultValue":  "Assets",
           
-                    "example":  ""
+                    "example":  "Assets/UI/Prefabs"
                 
         },
         
@@ -114,9 +114,9 @@
           
                     "required":  false,
           
-                    "defaultValue":  "",
+                    "defaultValue":  "*",
           
-                    "example":  ""
+                    "example":  "*.prefab"
                 
         },
         
@@ -128,9 +128,9 @@
           
                     "required":  false,
           
-                    "defaultValue":  "",
+                    "defaultValue":  "false",
           
-                    "example":  ""
+                    "example":  "true"
                 
         }
             
@@ -160,7 +160,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/UI/Prefabs/MyButton.prefab"
                 
         },
         
@@ -172,9 +172,9 @@
           
                     "required":  false,
           
-                    "defaultValue":  "",
+                    "defaultValue":  "UnityEngine.Object",
           
-                    "example":  ""
+                    "example":  "UnityEngine.GameObject"
                 
         }
             
@@ -236,7 +236,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "error"
                 
         },
         
@@ -250,7 +250,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Error"
                 
         },
         
@@ -264,7 +264,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "NullReference"
                 
         },
         
@@ -276,9 +276,9 @@
           
                     "required":  false,
           
-                    "defaultValue":  "",
+                    "defaultValue":  "50",
           
-                    "example":  ""
+                    "example":  "20"
                 
         }
             
@@ -308,7 +308,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/Game/ResourcesAB/UI2/G/Act99/Prefab/Act99_Test.prefab"
                 
         },
         
@@ -322,7 +322,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/Game/ResourcesAB/Lua/Module/Activity99/Act99_TestView.lua.txt"
                 
         },
         
@@ -336,7 +336,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Act99_Test"
                 
         }
             
@@ -366,7 +366,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/Game/ResourcesAB/Lua/Module/Activity99/Act99_TestView.lua.txt"
                 
         },
         
@@ -380,7 +380,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "NewView"
                 
         }
             
@@ -410,7 +410,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/Game/ResourcesAB/UI2/G/Act99/Prefab/Act99_AFK_MyTips.prefab"
                 
         },
         
@@ -424,7 +424,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Act99_AFK_MyTips"
                 
         }
             
@@ -454,7 +454,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/Game/ResourcesAB/UI2/G/Act99/Prefab/Act99_AFK_MyTips.prefab"
                 
         },
         
@@ -468,7 +468,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Act99_AFK_MyTips"
                 
         },
         
@@ -482,7 +482,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "object"
                 
         },
         
@@ -496,7 +496,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "CloseBtn"
                 
         },
         
@@ -510,7 +510,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "NewButton"
                 
         },
         
@@ -524,7 +524,137 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Button"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "add_child",
+      
+            "toolName":  "unity_prefab_add_child",
+      
+            "description":  "向预制体添加子物体",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
+                
+        },
+        
+                {
+          
+                    "name":  "parent",
+          
+                    "description":  "父物体路径，空字符串表示根物体",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Panel/Bottom"
+                
+        },
+        
+                {
+          
+                    "name":  "name",
+          
+                    "description":  "新物体名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "NewButton"
+                
+        },
+        
+                {
+          
+                    "name":  "components",
+          
+                    "description":  "组件类型列表（逗号分隔）",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "RectTransform,Image,Button"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "add_component",
+      
+            "toolName":  "unity_prefab_add_component",
+      
+            "description":  "向预制体内的物体添加组件",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
+                
+        },
+        
+                {
+          
+                    "name":  "objectPath",
+          
+                    "description":  "物体路径，空字符串表示根物体",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Panel/Button"
+                
+        },
+        
+                {
+          
+                    "name":  "componentType",
+          
+                    "description":  "组件类型名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Button"
                 
         }
             
@@ -554,7 +684,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
                 
         },
         
@@ -568,7 +698,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Button"
                 
         },
         
@@ -582,7 +712,7 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "UnityEngine.UI.Image"
                 
         }
             
@@ -612,7 +742,239 @@
           
                     "defaultValue":  "",
           
-                    "example":  ""
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "get_property",
+      
+            "toolName":  "unity_prefab_get_property",
+      
+            "description":  "获取预制体内组件的属性值",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
+                
+        },
+        
+                {
+          
+                    "name":  "objectPath",
+          
+                    "description":  "物体路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Panel/Button"
+                
+        },
+        
+                {
+          
+                    "name":  "component",
+          
+                    "description":  "组件类型名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "RectTransform"
+                
+        },
+        
+                {
+          
+                    "name":  "property",
+          
+                    "description":  "属性名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "anchoredPosition"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "remove_object",
+      
+            "toolName":  "unity_prefab_remove_object",
+      
+            "description":  "从预制体中删除物体",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
+                
+        },
+        
+                {
+          
+                    "name":  "objectPath",
+          
+                    "description":  "要删除的物体路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Panel/OldButton"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "save",
+      
+            "toolName":  "unity_prefab_save",
+      
+            "description":  "保存预制体修改",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "prefab",
+      
+            "command":  "set_property",
+      
+            "toolName":  "unity_prefab_set_property",
+      
+            "description":  "设置预制体内组件的属性",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "Prefab文件路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Assets/UI/Prefabs/MainView.prefab"
+                
+        },
+        
+                {
+          
+                    "name":  "objectPath",
+          
+                    "description":  "物体路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Panel/Button"
+                
+        },
+        
+                {
+          
+                    "name":  "component",
+          
+                    "description":  "组件类型名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "RectTransform"
+                
+        },
+        
+                {
+          
+                    "name":  "property",
+          
+                    "description":  "属性名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "anchoredPosition"
+                
+        },
+        
+                {
+          
+                    "name":  "value",
+          
+                    "description":  "属性值。简单格式：Vector2/3用逗号分隔如\"100,-50\"，Color用逗号分隔如\"1,0,0,1\"，基础类型直接写值",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "100,-50"
                 
         }
             
