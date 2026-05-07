@@ -61,14 +61,6 @@ AI Client <-- MCP Protocol --> Node.js Server <-- HTTP (Port 8090) --> Unity Edi
 | `log_clear_logs` | Clear logs | - |
 | `log_get_log_count` | Get log count | - |
 
-### Lua Operations (`lua_*`)
-
-| Command | Description | Example Parameters |
-|---------|-------------|-------------------|
-| `lua_get_prefab_lua_params` | Read LuaBehaviour params | `prefabPath` |
-| `lua_set_prefab_lua_param` | Set LuaBehaviour param | `prefabPath`, `gameObjectName`, `paramType` (object/value), `key`, `newValue` |
-| `lua_create_script` | Create Lua script | `filePath`, `templateType` (NewView/NewLuaBehaviour) |
-| `lua_attach_script` | Attach script to prefab | `prefabPath`, `scriptPath`, `gameObjectName` (optional) |
 
 ## Usage Examples
 
@@ -93,53 +85,7 @@ AI Client <-- MCP Protocol --> Node.js Server <-- HTTP (Port 8090) --> Unity Edi
 }
 ```
 
-### Example 3: Read Prefab Lua Parameters
 
-```json
-{
-  "command": "lua_get_prefab_lua_params",
-  "parameters": {
-    "prefabPath": "Assets/Prefabs/MyPrefab.prefab"
-  }
-}
-```
-
-### Example 4: Bind Lua Parameter
-
-```json
-{
-  "command": "lua_set_prefab_lua_param",
-  "parameters": {
-    "prefabPath": "Assets/Prefabs/MyPrefab.prefab",
-    "gameObjectName": "MyPrefab",
-    "paramType": "object",
-    "key": "TitleText",
-    "newValue": "TxtTitle"
-  }
-}
-```
-
-### Example 5: Create and Attach Lua Script
-
-```json
-// Step 1: Create script
-{
-  "command": "lua_create_script",
-  "parameters": {
-    "filePath": "Assets/Game/Lua/Module/MyModule/MyView.lua.txt",
-    "templateType": "NewView"
-  }
-}
-
-// Step 2: Attach to prefab
-{
-  "command": "lua_attach_script",
-  "parameters": {
-    "prefabPath": "Assets/Prefabs/MyPrefab.prefab",
-    "scriptPath": "Assets/Game/Lua/Module/MyModule/MyView.lua.txt"
-  }
-}
-```
 
 ## Common Workflows
 
@@ -147,15 +93,9 @@ AI Client <-- MCP Protocol --> Node.js Server <-- HTTP (Port 8090) --> Unity Edi
 
 1. `prefab_get_hierarchy` - Get full structure
 2. `prefab_find_objects` - Find specific components
-3. `lua_get_prefab_lua_params` - Check existing Lua bindings
 
-### Workflow 2: Setup Lua UI
 
-1. `lua_create_script` - Create Lua script with DefineList
-2. `lua_attach_script` - Attach to prefab root
-3. `lua_set_prefab_lua_param` - Bind each UI component
-
-### Workflow 3: Debug Issues
+### Workflow 2: Debug Issues
 
 1. `log_clear_logs` - Clear old logs
 2. Execute operation
