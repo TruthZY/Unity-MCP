@@ -12,7 +12,7 @@ namespace McpUnity
     [InitializeOnLoad]
     public static class LogCollector
     {
-        private const int MaxLogs = 50;
+        private const int MaxLogs = 200;
         private static readonly List<LogEntry> Logs = new();
         private static bool _isInitialized = false;
 
@@ -58,7 +58,7 @@ namespace McpUnity
         /// <summary>
         /// 获取日志列表
         /// </summary>
-        public static List<LogEntry> GetLogs(string filter = null, string logType = null, string search = null)
+        public static List<LogEntry> GetLogs(string filter = null, string logType = null, string search = null, string keyword = null)
         {
             lock (Logs)
             {
@@ -87,12 +87,19 @@ namespace McpUnity
                     }
                 }
 
-                // 搜索关键词
+                // 搜索关键词（匹配消息和堆栈）
                 if (!string.IsNullOrEmpty(search))
                 {
                     query = query.Where(l => 
                         l.message.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0 ||
                         l.stackTrace.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+
+                // 关键字过滤（仅匹配消息内容，可与 filter 组合）
+                if (!string.IsNullOrEmpty(keyword))
+                {
+                    query = query.Where(l =>
+                        l.message.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0);
                 }
 
                 return query.ToList();

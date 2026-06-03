@@ -18,18 +18,20 @@ namespace McpUnity.Modules
         [McpParameter("filter", "过滤级别: error, warning, log", Required = false, Example = "error")]
         [McpParameter("logType", "日志类型", Required = false, Example = "Error")]
         [McpParameter("search", "搜索关键词", Required = false, Example = "NullReference")]
+        [McpParameter("keyword", "按消息内容关键字过滤(不区分大小写)，可与filter组合使用", Required = false, Example = "AICheck")]
         [McpParameter("limit", "返回数量限制(最大50)", Required = false, DefaultValue = "50", Example = "20")]
         public object GetLogs(Dictionary<string, string> parameters)
         {
             string filter = GetParam(parameters, "filter");
             string logType = GetParam(parameters, "logType");
             string search = GetParam(parameters, "search");
+            string keyword = GetParam(parameters, "keyword");
             string limitStr = GetParam(parameters, "limit", "50");
 
             int limit = int.TryParse(limitStr, out int l) ? l : 50;
             if (limit > 50) limit = 50;
 
-            var logs = LogCollector.GetLogs(filter, logType, search);
+            var logs = LogCollector.GetLogs(filter, logType, search, keyword);
             var limitedLogs = logs.Take(limit).ToList();
 
             return new LogsResult

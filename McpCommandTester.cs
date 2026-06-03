@@ -502,16 +502,26 @@ namespace McpUnity.Editor
                 }
                 
                 // 格式化结果
+                bool isResultSuccess = true;
                 if (result != null)
                 {
                     testResults = JsonUtility.ToJson(result, true);
+                    // 通过反射检测 success 字段
+                    var successField = result.GetType().GetField("success");
+                    if (successField != null && successField.FieldType == typeof(bool))
+                    {
+                        isResultSuccess = (bool)successField.GetValue(result);
+                    }
                 }
                 else
                 {
-                    testResults = "指令执行成功 (无返回值)";
+                    testResults = "指令执行完成 (无返回值)";
                 }
                 
-                Debug.Log($"指令 {cmd.FullName} 执行成功");
+                if (isResultSuccess)
+                    Debug.Log($"指令 {cmd.FullName} 执行成功");
+                else
+                    Debug.LogWarning($"指令 {cmd.FullName} 执行失败");
             }
             catch (Exception ex)
             {

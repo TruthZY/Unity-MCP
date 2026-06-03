@@ -5,7 +5,10 @@
 Unity MCP (Model Context Protocol) 是一个让 AI 能够控制 Unity 编辑器的解决方案。
 
 ```
-AI 客户端 (Claude/Qoder) <-- MCP 协议 --> Node.js 服务端 <-- HTTP --> Unity 编辑器
+AI 客户端 (Claude等) <-- MCP 协议 --> Node.js 服务端 <-- HTTP --> Unity 编辑器
+或
+Qoder <-- Curl -->  HTTP <-- HTTP --> Unity 编辑器
+
 ```
 
 ## 快速开始
@@ -23,6 +26,7 @@ MCPEditor/
 │   ├── SceneModule.cs         # 场景操作
 │   ├── AssetModule.cs         # 资源管理
 │   ├── LogModule.cs           # 日志管理
+│   ├── SystemModule.cs        # 帮助
 │   └── PrefabModule.cs        # 预制体分析
 │
 ├── LogCollector.cs            # 日志收集器
@@ -30,7 +34,6 @@ MCPEditor/
 │
 └── .MCPServer/                # Node.js 服务端
     ├── McpServer/             # 服务端代码
-    └── unity-mcp-dev/         # 本开发指南
 ```
 
 ### 2. 添加新命令（3步）
@@ -81,47 +84,7 @@ public class SceneModule : IMcpModule
 }
 ```
 
-#### 第2步：在 Node.js 中添加工具定义
-
-编辑 `.MCPServer/McpServer/src/index.ts`：
-
-```typescript
-// 1. 在 TOOLS 数组中添加工具定义
-{
-  name: 'unity_scene_my_command',  // 工具名称（前缀 + 模块 + 命令）
-  description: '命令的功能描述',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string',
-        description: '参数说明',
-      },
-      count: {
-        type: 'number',
-        description: '参数说明',
-      },
-    },
-    required: ['name'],  // 必需参数
-  },
-},
-
-// 2. 在 switch 语句中添加调用处理
-case 'unity_scene_my_command':
-  result = await unityClient.sendCommand('my_command', {
-    name: args?.name,
-    count: args?.count?.toString(),  // 数字转字符串
-  });
-  break;
-```
-
 #### 第3步：编译并测试
-
-```bash
-# 编译 Node.js 服务端
-cd .MCPServer/McpServer
-npm run build
-```
 
 在 Unity 中：
 1. 等待代码编译完成
@@ -170,73 +133,6 @@ return new Result
 };
 ```
 
-## Unity 编辑器安全
-
-修改场景或对象时，必须遵循以下规范：
-
-```csharp
-// 1. 记录撤销操作
-Undo.RecordObject(targetObject, "操作描述");
-
-// 2. 执行修改
-targetObject.property = newValue;
-
-// 3. 标记场景已修改
-EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-
-// 4. 标记对象已修改（可选）
-EditorUtility.SetDirty(targetObject);
-```
-
-## 现有模块参考
-
-### SceneModule (scene_*)
-场景操作命令：
-- `scene_ping` - 健康检查
-- `scene_get_hierarchy` - 获取场景层级
-- `scene_create_object` - 创建游戏对象
-- `scene_delete_object` - 删除游戏对象
-- `scene_select_object` - 选择对象
-- `scene_set_property` / `scene_get_property` - 设置/获取属性
-- `scene_get_components` / `scene_add_component` - 组件管理
-- `scene_execute_menu` - 执行菜单项
-
-### AssetModule (asset_*)
-资源管理命令：
-- `asset_get_assets` - 获取资源列表
-- `asset_load_asset` - 加载资源信息
-- `asset_create_folder` - 创建文件夹
-- `asset_delete_asset` - 删除资源
-
-### LogModule (log_*)
-日志管理命令：
-- `log_get_logs` - 获取日志（支持过滤：error/warning/log）
-- `log_clear_logs` - 清空日志
-- `log_get_log_count` - 获取日志数量
-
-### PrefabModule (prefab_*)
-预制体分析命令：
-- `prefab_get_hierarchy` - 获取完整层级
-- `prefab_get_components` - 获取组件信息
-- `prefab_find_objects` - 按名称/组件查找对象
-
-## 调试技巧
-
-### 1. 查看已注册命令
-在 Unity 控制台中搜索 `[MCP]` 日志，可以看到所有已注册的命令。
-
-### 2. 测试 HTTP 接口
-```bash
-# 测试连接
-curl http://localhost:8090/McpUnity/ \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"command":"scene_ping"}'
-```
-
-### 3. 查看详细日志
-在 `CommandRouter.cs` 中取消注释日志输出，可以看到命令执行详情。
-
 ## 常见问题
 
 ### Q: 命令找不到？
@@ -255,7 +151,7 @@ A: 检查以下几点：
 ### Q: Unity 没有响应？
 A: 检查以下几点：
 1. MCP Server 窗口是否已启动
-2. 端口 8090 是否被占用
+2. 端口是否被占用
 3. Unity 控制台是否有错误
 4. 防火墙是否阻止了连接
 
@@ -335,7 +231,7 @@ public class ExampleModule : IMcpModule
 }
 ```
 
-对应的 Node.js 工具定义：
+对应的 Node.js 工具定义：(不使用MCP方式，直接Curl执行则忽略，如Qoder)
 
 ```typescript
 {

@@ -1,0 +1,10 @@
+# Project-specific modules (contain game logic, not for sharing)
+Modules/LuaModule.cs
+Modules/LuaModule.cs.meta
+
+# Node.js dependencies
+.MCPServer/McpServer/node_modules/
+.MCPServer/McpServer/dist/
+
+# Generated config
+.MCPServer/McpServer/tools.json

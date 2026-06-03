@@ -29,16 +29,44 @@ namespace McpUnity.Modules
         }
 
         [McpCommand("get_hierarchy", "获取当前场景的完整层级结构")]
+        [McpParameter("maxDepth", "递归深度: 0=仅根对象(默认), >0=递归展开子对象层数, -1=无限递归", Required = false, DefaultValue = "0", Example = "2")]
+        [McpParameter("path", "起始对象路径(可选): 不传=从场景根对象开始, 传值=从指定对象开始往下递归", Required = false, Example = "UIRoot(Clone)")]
         public object GetHierarchy(Dictionary<string, string> parameters)
         {
+            int maxDepth = 0;
+            if (parameters.TryGetValue("maxDepth", out var depthStr))
+            {
+                int.TryParse(depthStr, out maxDepth);
+            }
+
+            string path = GetParam(parameters, "path");
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                // 从指定路径开始获取层级（支持未激活对象）
+                var obj = FindGameObjectByPath(path);
+                if (obj == null)
+                    return new HierarchyResult { success = false, error = $"Object not found: {path}" };
+
+                return new HierarchyResult
+                {
+                    success = true,
+                    sceneName = SceneManager.GetActiveScene().name,
+                    rootCount = 1,
+                    objects = new[] { SerializeGameObject(obj, 0, maxDepth) }
+                };
+            }
+
+            // 默认行为：获取场景根对象
             var scene = SceneManager.GetActiveScene();
             var rootObjects = scene.GetRootGameObjects();
 
             return new HierarchyResult 
             { 
+                success = true,
                 sceneName = scene.name, 
                 rootCount = rootObjects.Length,
-                objects = rootObjects.Select(SerializeGameObject).ToArray()
+                objects = rootObjects.Select(obj => SerializeGameObject(obj, 0, maxDepth)).ToArray()
             };
         }
 
@@ -53,7 +81,7 @@ namespace McpUnity.Modules
             GameObject target = null;
             if (!string.IsNullOrEmpty(path))
             {
-                target = GameObject.Find(path);
+                target = FindGameObjectByPath(path);
             }
             else if (!string.IsNullOrEmpty(name))
             {
@@ -93,7 +121,7 @@ namespace McpUnity.Modules
 
             if (!string.IsNullOrEmpty(parentPath))
             {
-                var parent = GameObject.Find(parentPath);
+                var parent = FindGameObjectByPath(parentPath);
                 if (parent != null)
                 {
                     obj.transform.SetParent(parent.transform, false);
@@ -117,7 +145,7 @@ namespace McpUnity.Modules
             GameObject target = null;
             if (!string.IsNullOrEmpty(path))
             {
-                target = GameObject.Find(path);
+                target = FindGameObjectByPath(path);
             }
             else if (!string.IsNullOrEmpty(name))
             {
@@ -151,7 +179,7 @@ namespace McpUnity.Modules
                 return new SetPropertyResult { success = false, error = "Missing required parameters" };
             }
 
-            var obj = GameObject.Find(path);
+            var obj = FindGameObjectByPath(path);
             if (obj == null)
             {
                 return new SetPropertyResult { success = false, error = "Object not found" };
@@ -210,7 +238,7 @@ namespace McpUnity.Modules
             string componentName = GetParam(parameters, "component");
             string propertyName = GetParam(parameters, "property");
 
-            var obj = GameObject.Find(path);
+            var obj = FindGameObjectByPath(path);
             if (obj == null)
             {
                 return new GetPropertyResult { error = "Object not found" };
@@ -253,6 +281,47 @@ namespace McpUnity.Modules
             return new MenuResult { executed = true, path = menuPath };
         }
 
+        [McpCommand("get_children", "获取指定GameObject的直接子对象列表")]
+        [McpParameter("path", "对象完整路径", Required = true, Example = "UIRoot(Clone)")]
+        public object GetChildren(Dictionary<string, string> parameters)
+        {
+            string path = GetParam(parameters, "path");
+            if (string.IsNullOrEmpty(path))
+                return new GetChildrenResult { success = false, error = "Parameter 'path' is required" };
+
+            // 使用手动遍历，支持查找未激活的对象
+            var obj = FindGameObjectByPath(path);
+            if (obj == null)
+                return new GetChildrenResult { success = false, error = $"Object not found: {path}" };
+
+            // 使用 GetComponentsInChildren(includeInactive:true) 确保包含隐藏的子系统对象
+            var allTransforms = obj.GetComponentsInChildren<Transform>(true);
+            var childList = new List<ChildInfo>();
+            foreach (var t in allTransforms)
+            {
+                // 只取直接子对象（parent 是当前对象）
+                if (t.parent == obj.transform)
+                {
+                    childList.Add(new ChildInfo
+                    {
+                        name = t.name,
+                        path = GetGameObjectPath(t.gameObject),
+                        active = t.gameObject.activeSelf,
+                        childCount = t.childCount,
+                        components = t.GetComponents<Component>().Select(c => c.GetType().Name).ToArray()
+                    });
+                }
+            }
+
+            return new GetChildrenResult
+            {
+                success = true,
+                parentPath = path,
+                childCount = childList.Count,
+                children = childList.ToArray()
+            };
+        }
+
         [McpCommand("add_component", "给GameObject添加组件")]
         [McpParameter("path", "对象完整路径", Required = true, Example = "Canvas/Panel/Button")]
         [McpParameter("type", "组件类型全称", Required = true, Example = "UnityEngine.UI.Button")]
@@ -261,7 +330,7 @@ namespace McpUnity.Modules
             string path = GetParam(parameters, "path");
             string componentType = GetParam(parameters, "type");
 
-            var obj = GameObject.Find(path);
+            var obj = FindGameObjectByPath(path);
             if (obj == null)
             {
                 return new AddComponentResult { success = false, error = "Object not found" };
@@ -362,7 +431,59 @@ namespace McpUnity.Modules
             return GetGameObjectPath(obj.transform.parent.gameObject) + "/" + obj.name;
         }
 
-        private GameObjectInfo SerializeGameObject(GameObject obj)
+        /// <summary>
+        /// 通过路径查找 GameObject，支持未激活（隐藏）的对象。
+        /// GameObject.Find() 只能找到激活对象，此方法通过手动遍历 Transform 层级来查找。
+        /// </summary>
+        private GameObject FindGameObjectByPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return null;
+
+            var parts = path.Split('/');
+
+            // 在所有场景根对象中查找第一个匹配的部分
+            var rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+            Transform current = null;
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (i == 0)
+                {
+                    // 根层级：在场景根对象中查找
+                    foreach (var root in rootObjects)
+                    {
+                        if (root.name == parts[0])
+                        {
+                            current = root.transform;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // 子层级：遍历当前 Transform 的所有子对象（包括未激活的）
+                    Transform next = null;
+                    for (int j = 0; j < current.childCount; j++)
+                    {
+                        var child = current.GetChild(j);
+                        if (child.name == parts[i])
+                        {
+                            next = child;
+                            break;
+                        }
+                    }
+                    current = next;
+                }
+
+                if (current == null)
+                    return null;
+            }
+
+            return current?.gameObject;
+        }
+
+        private GameObjectInfo SerializeGameObject(GameObject obj, int currentDepth = 0, int maxDepth = 0)
         {
             var info = new GameObjectInfo
             {
@@ -374,13 +495,22 @@ namespace McpUnity.Modules
 
             int childCount = obj.transform.childCount;
             info.childCount = childCount;
-            if (childCount > 0 && childCount <= 10)
+
+            // maxDepth: 0=不展开子对象, >0=递归到指定深度, -1=无限递归
+            bool shouldExpand = maxDepth == -1 || currentDepth < maxDepth;
+            if (childCount > 0 && shouldExpand)
             {
-                info.children = new GameObjectInfo[childCount];
-                for (int i = 0; i < childCount; i++)
+                // 使用 GetComponentsInChildren(includeInactive:true) 确保包含隐藏的子对象
+                var allTransforms = obj.GetComponentsInChildren<Transform>(true);
+                var directChildren = new List<GameObjectInfo>();
+                foreach (var t in allTransforms)
                 {
-                    info.children[i] = SerializeGameObject(obj.transform.GetChild(i).gameObject);
+                    if (t.parent == obj.transform)
+                    {
+                        directChildren.Add(SerializeGameObject(t.gameObject, currentDepth + 1, maxDepth));
+                    }
                 }
+                info.children = directChildren.ToArray();
             }
 
             return info;
@@ -401,6 +531,8 @@ namespace McpUnity.Modules
         [Serializable]
         public class HierarchyResult
         {
+            public bool success;
+            public string error;
             public string sceneName;
             public int rootCount;
             public GameObjectInfo[] objects;
@@ -482,6 +614,26 @@ namespace McpUnity.Modules
             public bool success;
             public string type;
             public string error;
+        }
+
+        [Serializable]
+        public class GetChildrenResult
+        {
+            public bool success;
+            public string error;
+            public string parentPath;
+            public int childCount;
+            public ChildInfo[] children;
+        }
+
+        [Serializable]
+        public class ChildInfo
+        {
+            public string name;
+            public string path;
+            public bool active;
+            public int childCount;
+            public string[] components;
         }
 
         #endregion

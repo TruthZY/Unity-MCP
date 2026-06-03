@@ -1,6 +1,6 @@
 {
   
-    "generatedAt":  "2026-03-21 19:08:29",
+    "generatedAt":  "2026-06-03 09:54:58",
   
     "unityVersion":  "2022.3.61t8",
   
@@ -184,6 +184,50 @@
     
         {
       
+            "module":  "code",
+      
+            "command":  "execute",
+      
+            "toolName":  "unity_code_execute",
+      
+            "description":  "在 Unity Editor 中动态编译并执行 C# 代码（内存编译，不生成文件）",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "code",
+          
+                    "description":  "要执行的 C# 代码（方法体级别，可用 using System/UnityEngine/UnityEditor）",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "return GameObject.Find(\"Cube\")?.name;"
+                
+        },
+        
+                {
+          
+                    "name":  "safety_checks",
+          
+                    "description":  "是否启用安全检查（拦截危险模式），默认 true",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "true"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
             "module":  "log",
       
             "command":  "clear_logs",
@@ -265,6 +309,20 @@
                     "defaultValue":  "",
           
                     "example":  "NullReference"
+                
+        },
+        
+                {
+          
+                    "name":  "keyword",
+          
+                    "description":  "按消息内容关键字过滤(不区分大小写)，可与filter组合使用",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "AICheck"
                 
         },
         
@@ -381,6 +439,66 @@
                     "defaultValue":  "",
           
                     "example":  "NewView"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "lua",
+      
+            "command":  "eval",
+      
+            "toolName":  "unity_lua_eval",
+      
+            "description":  "执行 Lua 表达式并返回结果和 print 输出",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "expression",
+          
+                    "description":  "Lua 表达式或代码",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "ViewManager:GetView('Act106_MainView') ~= nil"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "lua",
+      
+            "command":  "execute",
+      
+            "toolName":  "unity_lua_execute",
+      
+            "description":  "执行 Lua 代码",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "code",
+          
+                    "description":  "要执行的 Lua 代码",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "print('Hello from MCP')"
                 
         }
             
@@ -986,6 +1104,314 @@
       
             "module":  "scene",
       
+            "command":  "add_component",
+      
+            "toolName":  "unity_scene_add_component",
+      
+            "description":  "给GameObject添加组件",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "对象完整路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Canvas/Panel/Button"
+                
+        },
+        
+                {
+          
+                    "name":  "type",
+          
+                    "description":  "组件类型全称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "UnityEngine.UI.Button"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "create_object",
+      
+            "toolName":  "unity_scene_create_object",
+      
+            "description":  "在场景中创建新GameObject",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "name",
+          
+                    "description":  "对象名称",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "New GameObject",
+          
+                    "example":  "MyButton"
+                
+        },
+        
+                {
+          
+                    "name":  "primitiveType",
+          
+                    "description":  "基础类型，如 Cube, Sphere, Cylinder",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Cube"
+                
+        },
+        
+                {
+          
+                    "name":  "parent",
+          
+                    "description":  "父对象路径",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Canvas/Panel"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "delete_object",
+      
+            "toolName":  "unity_scene_delete_object",
+      
+            "description":  "删除场景中的GameObject",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "对象完整路径",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Canvas/Panel/OldButton"
+                
+        },
+        
+                {
+          
+                    "name":  "name",
+          
+                    "description":  "对象名称（path和name二选一）",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "TempObject"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "execute_menu",
+      
+            "toolName":  "unity_scene_execute_menu",
+      
+            "description":  "执行Unity编辑器菜单命令",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "菜单路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "GameObject/3D Object/Cube"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "get_children",
+      
+            "toolName":  "unity_scene_get_children",
+      
+            "description":  "获取指定GameObject的直接子对象列表",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "对象完整路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "UIRoot(Clone)"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "get_hierarchy",
+      
+            "toolName":  "unity_scene_get_hierarchy",
+      
+            "description":  "获取当前场景的完整层级结构",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "maxDepth",
+          
+                    "description":  "递归深度: 0=仅根对象(默认), >0=递归展开子对象层数, -1=无限递归",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "0",
+          
+                    "example":  "2"
+                
+        },
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "起始对象路径(可选): 不传=从场景根对象开始, 传值=从指定对象开始往下递归",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "UIRoot(Clone)"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "get_property",
+      
+            "toolName":  "unity_scene_get_property",
+      
+            "description":  "获取GameObject组件的属性值",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "对象完整路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Canvas/Panel/Button"
+                
+        },
+        
+                {
+          
+                    "name":  "component",
+          
+                    "description":  "组件名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "RectTransform"
+                
+        },
+        
+                {
+          
+                    "name":  "property",
+          
+                    "description":  "属性名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "anchoredPosition"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
             "command":  "ping",
       
             "toolName":  "unity_scene_ping",
@@ -994,6 +1420,152 @@
       
             "parameters":  [
         
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "select_object",
+      
+            "toolName":  "unity_scene_select_object",
+      
+            "description":  "在场景中选中指定GameObject",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "对象完整路径",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Canvas/Panel/Button"
+                
+        },
+        
+                {
+          
+                    "name":  "name",
+          
+                    "description":  "对象名称（path和name二选一）",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "MainCamera"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "scene",
+      
+            "command":  "set_property",
+      
+            "toolName":  "unity_scene_set_property",
+      
+            "description":  "设置GameObject组件的属性值",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "path",
+          
+                    "description":  "对象完整路径",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Canvas/Panel/Button"
+                
+        },
+        
+                {
+          
+                    "name":  "component",
+          
+                    "description":  "组件名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "Transform"
+                
+        },
+        
+                {
+          
+                    "name":  "property",
+          
+                    "description":  "属性名称",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "localPosition"
+                
+        },
+        
+                {
+          
+                    "name":  "value",
+          
+                    "description":  "属性值。简单格式：Vector2/3用逗号分隔如\"100,-50,0\"，Color用逗号分隔如\"1,0,0,1\"，基础类型直接写值",
+          
+                    "required":  true,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "100,-50,0"
+                
+        }
+            
+      ]
+        
+    },
+    
+        {
+      
+            "module":  "system",
+      
+            "command":  "help",
+      
+            "toolName":  "unity_system_help",
+      
+            "description":  "返回所有可用命令的名称、参数说明和描述",
+      
+            "parameters":  [
+        
+                {
+          
+                    "name":  "filter",
+          
+                    "description":  "按模块名过滤(可选)，如 scene, lua, prefab",
+          
+                    "required":  false,
+          
+                    "defaultValue":  "",
+          
+                    "example":  "scene"
+                
+        }
+            
       ]
         
     }

@@ -37,6 +37,113 @@ namespace McpUnity.Modules
             }
         }
 
+        // LuaEnv 缓存
+        private object _luaEnv;
+
+        /// <summary>
+        /// 通过反射获取 Game.GameClient.Instance.LuaEnv
+        /// </summary>
+        private object GetLuaEnv()
+        {
+            if (_luaEnv != null) return _luaEnv;
+
+            // 查找 GameClient 类型
+            Type gameClientType = null;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                gameClientType = assembly.GetType("Game.GameClient");
+                if (gameClientType != null) break;
+            }
+
+            if (gameClientType == null)
+            {
+                Debug.LogError("[MCP] GameClient type not found");
+                return null;
+            }
+
+            var instanceProp = gameClientType.GetProperty("Instance",
+                BindingFlags.Public | BindingFlags.Static);
+            if (instanceProp == null)
+            {
+                Debug.LogError("[MCP] GameClient.Instance property not found");
+                return null;
+            }
+
+            var instance = instanceProp.GetValue(null);
+            if (instance == null)
+            {
+                Debug.LogWarning("[MCP] GameClient.Instance is null");
+                return null;
+            }
+
+            var luaEnvProp = instance.GetType().GetProperty("LuaEnv",
+                BindingFlags.Public | BindingFlags.Instance);
+            if (luaEnvProp == null)
+            {
+                Debug.LogError("[MCP] GameClient.LuaEnv property not found");
+                return null;
+            }
+
+            _luaEnv = luaEnvProp.GetValue(instance);
+            return _luaEnv;
+        }
+
+        /// <summary>
+        /// 灵活查找 LuaEnv 的 DoString 方法（兼容不同 xLua 版本）
+        /// 优先找 DoString(string, string)，其次找 DoString(string)，最后找任何含 DoString 前缀的方法
+        /// </summary>
+        private MethodInfo FindDoStringMethod(Type luaEnvType)
+        {
+            // 1. 精确匹配 DoString(string, string)
+            var method = luaEnvType.GetMethod("DoString",
+                BindingFlags.Public | BindingFlags.Instance,
+                null, new Type[] { typeof(string), typeof(string) }, null);
+            if (method != null) return method;
+
+            // 2. 匹配 DoString(string)
+            method = luaEnvType.GetMethod("DoString",
+                BindingFlags.Public | BindingFlags.Instance,
+                null, new Type[] { typeof(string) }, null);
+            if (method != null) return method;
+
+            // 3. 遍历所有方法，找 DoString 且第一个参数是 string 的
+            foreach (var m in luaEnvType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (m.Name == "DoString")
+                {
+                    var pars = m.GetParameters();
+                    if (pars.Length >= 1 && pars[0].ParameterType == typeof(string))
+                        return m;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 调用 DoString 方法，根据实际参数数量自动填充可选参数
+        /// 兼容 DoString(string)、DoString(string, string)、DoString(string, string, LuaTable) 等签名
+        /// </summary>
+        private object[] InvokeDoString(MethodInfo method, object luaEnv, string code, string chunkName)
+        {
+            var methodParams = method.GetParameters();
+            object[] args = new object[methodParams.Length];
+
+            // 第一个参数始终是 chunk (string)
+            if (args.Length > 0) args[0] = code;
+            // 第二个参数是 chunkName (string)
+            if (args.Length > 1) args[1] = chunkName;
+            // 第三个及以后的参数用默认值 (null)
+            for (int i = 2; i < args.Length; i++)
+            {
+                args[i] = methodParams[i].HasDefaultValue
+                    ? methodParams[i].DefaultValue
+                    : null;
+            }
+
+            return (object[])method.Invoke(luaEnv, args);
+        }
+
         /// <summary>
         /// 直接从prefab资源中获取LuaBehaviour参数（无需实例化到场景）
         /// 使用AssetDatabase.LoadAssetAtPath加载prefab，然后通过SerializedObject读取序列化数据
@@ -678,6 +785,181 @@ namespace McpUnity.Modules
 
         #endregion
 
+        #region Lua Execution
+
+        /// <summary>
+        /// 执行 Lua 代码
+        /// 通过 LuaConsole 窗口执行代码字符串
+        /// </summary>
+        [McpCommand("execute", "执行 Lua 代码")]
+        [McpParameter("code", "要执行的 Lua 代码", Required = true, Example = "print('Hello from MCP')")]
+        public object Execute(Dictionary<string, string> parameters)
+        {
+            string code = GetParam(parameters, "code");
+
+            if (string.IsNullOrEmpty(code))
+                return new ExecuteResult { success = false, error = "Parameter 'code' is required" };
+
+            try
+            {
+                // 获取 LuaConsole 窗口实例
+                var console = EditorWindow.GetWindow<XLua.LuaConsole>();
+                if (console == null)
+                {
+                    return new ExecuteResult
+                    {
+                        success = false,
+                        error = "LuaConsole window not available.",
+                        code = code
+                    };
+                }
+
+                // 调用 doCommand 方法执行 Lua 代码
+                console.doCommand(code);
+
+                return new ExecuteResult
+                {
+                    success = true,
+                    code = code
+                };
+            }
+            catch (System.Exception ex)
+            {
+                string msg = string.Format("xLua exception:{0}\n{1}", ex.Message, ex.StackTrace);
+                UnityEngine.Debug.LogError(msg, null);
+
+                return new ExecuteResult
+                {
+                    success = false,
+                    error = msg,
+                    code = code
+                };
+            }
+        }
+
+        /// <summary>
+        /// 执行 Lua 表达式并捕获输出
+        /// 支持纯表达式求值（自动包装 return）和完整代码执行
+        /// 注意：项目 Lua 环境禁止新增全局变量，所有中间变量必须用 local
+        /// </summary>
+        [McpCommand("eval", "执行 Lua 表达式并返回结果和 print 输出")]
+        [McpParameter("expression", "Lua 表达式或代码", Required = true, Example = "ViewManager:GetView('Act106_MainView') ~= nil")]
+        public object ExecuteEval(Dictionary<string, string> parameters)
+        {
+            string expression = GetParam(parameters, "expression");
+
+            if (string.IsNullOrEmpty(expression))
+                return new EvalResult { success = false, error = "Parameter 'expression' is required" };
+
+            try
+            {
+                var luaEnv = GetLuaEnv();
+                if (luaEnv == null)
+                    return new EvalResult { success = false, error = "LuaEnv not available. Is the game running?" };
+
+                // 灵活查找 DoString 方法（兼容不同 xLua 版本签名）
+                var doStringMethod = FindDoStringMethod(luaEnv.GetType());
+                if (doStringMethod == null)
+                    return new EvalResult { success = false, error = $"LuaEnv.DoString method not found. Available methods: {string.Join(", ", luaEnv.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(m => m.Name.Contains("Do")).Select(m => m.Name + "(" + string.Join(",", m.GetParameters().Select(p => p.ParameterType.Name)) + ")"))}" };
+
+                // 构建包含 print 捕获 + 表达式求值的 Lua 代码（全部用 local，结果通过 return 返回）
+                string evalCode = BuildEvalLuaCode(expression);
+                Debug.Log($"[MCP] lua_eval code:\n{evalCode}");
+
+                // 执行代码，直接从返回值获取结果和输出
+                object[] results = InvokeDoString(doStringMethod, luaEnv, evalCode, "mcp_eval");
+
+                string resultStr = null;
+                string outputStr = "";
+
+                if (results != null && results.Length > 0)
+                {
+                    if (results[0] != null)
+                        resultStr = results[0].ToString();
+                    if (results.Length > 1 && results[1] != null)
+                        outputStr = results[1].ToString();
+                }
+
+                var outputLines = string.IsNullOrEmpty(outputStr)
+                    ? new string[0]
+                    : outputStr.Split(new[] { "\n" }, StringSplitOptions.None);
+
+                return new EvalResult
+                {
+                    success = true,
+                    result = resultStr,
+                    output = outputLines,
+                    expression = expression
+                };
+            }
+            catch (System.Exception ex)
+            {
+                string errorMsg = ex.Message;
+                if (ex.InnerException != null)
+                    errorMsg = ex.InnerException.Message;
+
+                return new EvalResult
+                {
+                    success = false,
+                    error = errorMsg,
+                    expression = expression
+                };
+            }
+        }
+
+        /// <summary>
+        /// 构建 eval 用的 Lua 代码
+        /// 全部使用 local 变量（项目禁止新增全局变量）
+        /// 结果通过 return 返回: result_str, output_str
+        /// </summary>
+        private string BuildEvalLuaCode(string expression)
+        {
+            var sb = new StringBuilder();
+
+            // 保存原始 print 到局部变量
+            sb.AppendLine("local _mcp_orig_print = print");
+            sb.AppendLine("local _mcp_output = {}");
+
+            // 用局部函数替换 print（捕获输出到 _mcp_output 表）
+            sb.AppendLine("print = function(...)");
+            sb.AppendLine("  local args = {...}");
+            sb.AppendLine("  local parts = {}");
+            sb.AppendLine("  for i = 1, #args do parts[i] = tostring(args[i]) end");
+            sb.AppendLine("  table.insert(_mcp_output, table.concat(parts, '\\t'))");
+            sb.AppendLine("  _mcp_orig_print(...)");
+            sb.AppendLine("end");
+
+            // 尝试作为表达式求值，失败则执行代码
+            sb.AppendLine("local _mcp_result = nil");
+            sb.AppendLine("local _eval_fn = load('return (' .. [[(" + expression + ")]] .. ')')");
+            sb.AppendLine("if _eval_fn then");
+            sb.AppendLine("  local _r_ok, _r_val = pcall(_eval_fn)");
+            sb.AppendLine("  if _r_ok then");
+            sb.AppendLine("    _mcp_result = tostring(_r_val)");
+            sb.AppendLine("  else");
+            sb.AppendLine("    _mcp_result = 'error: ' .. tostring(_r_val)");
+            sb.AppendLine("  end");
+            sb.AppendLine("else");
+            // 不是表达式，作为代码执行
+            sb.AppendLine("  local _stmt_ok, _stmt_err = pcall(function()");
+            sb.AppendLine("    " + expression);
+            sb.AppendLine("  end)");
+            sb.AppendLine("  if not _stmt_ok then");
+            sb.AppendLine("    _mcp_result = 'error: ' .. tostring(_stmt_err)");
+            sb.AppendLine("  end");
+            sb.AppendLine("end");
+
+            // 恢复原始 print
+            sb.AppendLine("print = _mcp_orig_print");
+
+            // 通过 return 返回结果（不依赖全局变量）
+            sb.AppendLine("return _mcp_result, table.concat(_mcp_output, '\\n')");
+
+            return sb.ToString();
+        }
+
+        #endregion
+
         #region Lua Script Creation
 
         /// <summary>
@@ -1154,6 +1436,24 @@ namespace McpUnity.Modules
             public string luaScriptPath;
             public List<LuaObjectParam> objectParams;
             public List<LuaValueParam> valueParams;
+        }
+
+        [Serializable]
+        public class ExecuteResult
+        {
+            public bool success;
+            public string error;
+            public string code;
+        }
+
+        [Serializable]
+        public class EvalResult
+        {
+            public bool success;
+            public string error;
+            public string result;
+            public string[] output;
+            public string expression;
         }
 
         #endregion

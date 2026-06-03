@@ -12,6 +12,7 @@ namespace McpUnity.Core
     public static class CommandRouter
     {
         private static readonly Dictionary<string, McpCommandHandler> Commands = new();
+        private static readonly Dictionary<string, List<string>> CommandParameters = new();
         private static bool _isInitialized = false;
 
         /// <summary>
@@ -63,6 +64,11 @@ namespace McpUnity.Core
                 // 创建委托
                 var handler = CreateHandler(module, method);
                 Commands[fullCommandName] = handler;
+
+                // 存储参数名称列表
+                var paramNames = method.GetCustomAttributes<McpParameterAttribute>()
+                    .Select(p => p.Name).ToList();
+                CommandParameters[fullCommandName] = paramNames;
                 
                 Debug.Log($"[MCP] Registered command: {fullCommandName}");
             }
@@ -126,6 +132,18 @@ namespace McpUnity.Core
                 Initialize();
             }
             return Commands.Keys.ToArray();
+        }
+
+        /// <summary>
+        /// 获取命令的参数名称列表
+        /// </summary>
+        public static List<string> GetCommandParameterNames(string commandName)
+        {
+            if (!_isInitialized)
+            {
+                Initialize();
+            }
+            return CommandParameters.TryGetValue(commandName, out var paramNames) ? paramNames : null;
         }
     }
 }

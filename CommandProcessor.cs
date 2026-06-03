@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using McpUnity.Core;
 using UnityEngine;
 
@@ -25,11 +26,34 @@ namespace McpUnity
 
                 // 解析参数
                 var parameters = ParseParameters(parametersJson);
-                
+
+                // 参数校验：检查是否有未知参数并给出建议
+                var expectedParams = CommandRouter.GetCommandParameterNames(command);
+                if (expectedParams != null && parameters.Count > 0)
+                {
+                    foreach (var key in parameters.Keys)
+                    {
+                        if (!expectedParams.Contains(key))
+                        {
+                            string suggestion = FindClosestParam(key, expectedParams);
+                            string availableStr = string.Join(", ", expectedParams);
+                            string errorMsg = suggestion != null
+                                ? $"Unknown parameter '{key}'. Did you mean '{suggestion}'? Available parameters: {availableStr}"
+                                : $"Unknown parameter '{key}'. Available parameters: {availableStr}";
+                            return ResponseHelper.Error(errorMsg);
+                        }
+                    }
+                }
+
                 // 使用 CommandRouter 执行命令
                 var result = CommandRouter.Execute(command, parameters);
                 
-                // 直接传递对象，让 ResponseHelper 处理序列化
+                // 检查命令结果是否包含 success=false，正确传递状态
+                if (result != null && IsFailureResult(result))
+                {
+                    return ResponseHelper.Error(JsonUtility.ToJson(result));
+                }
+                
                 return ResponseHelper.Success(result ?? new object());
             }
             catch (Exception ex)
@@ -38,7 +62,62 @@ namespace McpUnity
             }
         }
 
+        /// <summary>
+        /// 查找最接近的参数名（简单编辑距离）
+        /// </summary>
+        private static string FindClosestParam(string input, List<string> candidates)
+        {
+            string best = null;
+            int bestDist = int.MaxValue;
+
+            foreach (var candidate in candidates)
+            {
+                int dist = LevenshteinDistance(input.ToLower(), candidate.ToLower());
+                if (dist < bestDist && dist <= 3)
+                {
+                    bestDist = dist;
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
+        private static int LevenshteinDistance(string a, string b)
+        {
+            int[,] dp = new int[a.Length + 1, b.Length + 1];
+            for (int i = 0; i <= a.Length; i++) dp[i, 0] = i;
+            for (int j = 0; j <= b.Length; j++) dp[0, j] = j;
+
+            for (int i = 1; i <= a.Length; i++)
+            {
+                for (int j = 1; j <= b.Length; j++)
+                {
+                    int cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                    dp[i, j] = Math.Min(
+                        Math.Min(dp[i - 1, j] + 1, dp[i, j - 1] + 1),
+                        dp[i - 1, j - 1] + cost);
+                }
+            }
+
+            return dp[a.Length, b.Length];
+        }
+
         #region JSON Parsing Helpers
+
+        /// <summary>
+        /// 通过反射检测命令结果对象是否包含 success=false
+        /// </summary>
+        private static bool IsFailureResult(object result)
+        {
+            var type = result.GetType();
+            var prop = type.GetField("success");
+            if (prop != null && prop.FieldType == typeof(bool))
+            {
+                return !(bool)prop.GetValue(result);
+            }
+            return false;
+        }
 
         private static string ExtractJsonValue(string json, string key)
         {
